@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Enumeration;
 
 /**
@@ -88,15 +89,16 @@ public class ButtonUtil extends JFrame implements ActionListener {
                         null,
                         new ImageArea(0, 0, 809, 1284), size);
             } catch (IOException e) {
-                System.err.println("出错了！！！！");
+                System.err.println("-" + LocalDateTime.now() + "IOException出错了！！！！");
                 e.printStackTrace();
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                System.err.println("-" + LocalDateTime.now() + "JSONException出错了！！！！");
+                e.printStackTrace();
             }
         } else if (event.getSource() == pictureSource) {
             JFileChooser fc = new JFileChooser();
 
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("就挑个图吧","gif", "png","jpg");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("就挑个图吧", "gif", "png", "jpg");
             fc.setFileFilter(filter);
             //文件打开对话框
             int val = fc.showOpenDialog(null);
@@ -112,7 +114,7 @@ public class ButtonUtil extends JFrame implements ActionListener {
      */
     private static void InitGlobalFont(Font font) {
         FontUIResource fontRes = new FontUIResource(font);
-        for (Enumeration<Object> keys = UIManager.getDefaults().keys(); keys.hasMoreElements();) {
+        for (Enumeration<Object> keys = UIManager.getDefaults().keys(); keys.hasMoreElements(); ) {
             Object key = keys.nextElement();
             Object value = UIManager.get(key);
             if (value instanceof FontUIResource) {

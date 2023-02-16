@@ -7,7 +7,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 图片处理类
@@ -33,9 +36,10 @@ public class ImageUtil {
                                  int x, int y, int width, int height, int mosaicSize) throws IOException,
             JSONException {
         //1. 初始化图像处理各变量
-        if (!filePath.endsWith(".png") && !filePath.endsWith(".jpg") &&
-                !filePath.endsWith(".gif")) {
-            System.err.println("ImageUtil>>>文件名非法，不是正确的图片文件名");
+        if (!filePath.endsWith(".png") && !filePath.endsWith(".jpg") && !filePath.endsWith(".jpeg")
+                && !filePath.endsWith(".gif")) {
+            //会在本级目录输出error文件
+            System.err.println("-" + LocalDateTime.now() + "ImageUtil>>>文件名非法，不是正确的图片文件名-");
             return false;
         }
         int index = filePath.lastIndexOf(".");
@@ -81,7 +85,7 @@ public class ImageUtil {
         int xTmp = x;
         int yTmp = y;
 
-//        List<List<Integer>> listk = new ArrayList<>();
+        List<List<Integer>> listk = new ArrayList<>();
 
         for (int i = 0; i < xcount; i++) {
             for (int j = 0; j < ycount; j++) {
@@ -107,13 +111,13 @@ public class ImageUtil {
                 } else {
                     centerY += (mheight - 1) / 2;
                 }
-//                Color color = new Color(bi.getRGB(centerX, centerY));
-                Color color = new Color(ConfigUtil.searchClosest(bi.getRGB(centerX, centerY)));
-//                ArrayList<Integer> rgb = new ArrayList<>();
-//                rgb.add(color.getRed());
-//                rgb.add(color.getGreen());
-//                rgb.add(color.getBlue());
-//                listk.add(rgb);
+                Color sourceColor = new Color(bi.getRGB(centerX, centerY));
+                Color color = ConfigUtil.searchClosest(sourceColor);
+                ArrayList<Integer> rgb = new ArrayList<>();
+                rgb.add(color.getRed());
+                rgb.add(color.getGreen());
+                rgb.add(color.getBlue());
+                listk.add(rgb);
                 gs.setColor(color);
                 gs.fillRect(xTmp, yTmp, mwidth, mheight);
                 yTmp = yTmp + mosaicSize;// 计算下一个矩形的y坐标
@@ -130,6 +134,20 @@ public class ImageUtil {
         }
         File sf = new File(targetPath);
         ImageIO.write(spinImage, suffix, sf); // 保存图片
+
+        System.err.println(listk.stream().distinct().sorted((l1, l2) -> {
+            if (l1.get(0).equals(l2.get(0)) && l1.get(1).equals(l2.get(1)) && l1.get(2).equals(l2.get(2))) {
+                return 0;
+            } else if (l1.get(0).equals(l2.get(0)) && l1.get(1).equals(l2.get(1)) && l1.get(2) > l2.get(2)) {
+                return 1;
+            } else if (l1.get(0).equals(l2.get(0)) && l1.get(1) > l2.get(1)) {
+                return 1;
+            } else if (l1.get(0) > l2.get(0)) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }).collect(Collectors.toList()));
 
         return true;
     }
@@ -244,4 +262,5 @@ public class ImageUtil {
         ImageIO.write(spinImage, suffix, sf); // 保存图片
         return true;
     }
+
 }
