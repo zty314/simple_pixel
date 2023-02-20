@@ -21,7 +21,7 @@ public class ConfigUtil {
 
     public static List<Color> loadExistColor() throws IOException, JSONException {
 
-        String path = System.getProperty("user.dir");
+        String path = System.getProperties().getProperty("user.dir");
         File config = new File(path + "/config.json");
         if (!config.exists()) {
             extracted(config);
@@ -53,6 +53,7 @@ public class ConfigUtil {
 
     /**
      * 返回颜色编号，在colorList中读取具体色号
+     *
      * @param target
      * @return
      * @throws JSONException
