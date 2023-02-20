@@ -51,13 +51,20 @@ public class ConfigUtil {
         System.out.println(JSONObject.wrap(colors));
     }
 
-    public static Color searchClosest(Color target) throws JSONException, IOException {
+    /**
+     * 返回颜色编号，在colorList中读取具体色号
+     * @param target
+     * @return
+     * @throws JSONException
+     * @throws IOException
+     */
+    public static Integer searchClosest(Color target) throws JSONException, IOException {
         if (CollectionUtils.isEmpty(colorList)) {
             loadExistColor();
         }
         //有相同的直接返回
         if (colorList.contains(target)) {
-            return target;
+            return colorList.indexOf(target);
         }
         //可以看做是三维坐标的勾股定理
         int targetIndex = 0;
@@ -74,7 +81,7 @@ public class ConfigUtil {
             }
         }
 
-        return colorList.get(targetIndex);
+        return targetIndex;
     }
 
 

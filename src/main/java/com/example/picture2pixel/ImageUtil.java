@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 图片处理类
@@ -112,7 +111,8 @@ public class ImageUtil {
                     centerY += (mheight - 1) / 2;
                 }
                 Color sourceColor = new Color(bi.getRGB(centerX, centerY));
-                Color color = ConfigUtil.searchClosest(sourceColor);
+                Integer colorIndex = ConfigUtil.searchClosest(sourceColor);
+                Color color = ConfigUtil.colorList.get(colorIndex);
                 ArrayList<Integer> rgb = new ArrayList<>();
                 rgb.add(color.getRed());
                 rgb.add(color.getGreen());
@@ -121,11 +121,23 @@ public class ImageUtil {
                 gs.setColor(color);
                 gs.fillRect(xTmp, yTmp, mwidth, mheight);
                 yTmp = yTmp + mosaicSize;// 计算下一个矩形的y坐标
+
+                //4.给图片添加编号
+                Graphics2D pen = spinImage.createGraphics();
+                // 设置画笔颜色为白色
+                pen.setColor(blackOrWhite(color));
+                // 设置画笔字体样式为微软雅黑，斜体，文字大小为20px
+                pen.setFont(new Font("微软雅黑", Font.ITALIC, mosaicSize / 2));
+                // 这三个参数分别为你的文字内容，起始位置横坐标(px)，纵坐标位置(px)。
+                pen.drawString(String.valueOf(colorIndex), xTmp, centerY);
+
             }
             yTmp = y;// 还原y坐标
             xTmp = xTmp + mosaicSize;// 计算x坐标
         }
         gs.dispose();
+
+
         if (targetPath == null || targetPath.isEmpty()) {
             int i = filePath.lastIndexOf(".");
             StringBuilder builder = new StringBuilder(filePath);
@@ -135,19 +147,20 @@ public class ImageUtil {
         File sf = new File(targetPath);
         ImageIO.write(spinImage, suffix, sf); // 保存图片
 
-        System.err.println(listk.stream().distinct().sorted((l1, l2) -> {
-            if (l1.get(0).equals(l2.get(0)) && l1.get(1).equals(l2.get(1)) && l1.get(2).equals(l2.get(2))) {
-                return 0;
-            } else if (l1.get(0).equals(l2.get(0)) && l1.get(1).equals(l2.get(1)) && l1.get(2) > l2.get(2)) {
-                return 1;
-            } else if (l1.get(0).equals(l2.get(0)) && l1.get(1) > l2.get(1)) {
-                return 1;
-            } else if (l1.get(0) > l2.get(0)) {
-                return 1;
-            } else {
-                return -1;
-            }
-        }).collect(Collectors.toList()));
+//        System.err.println(listk.stream().distinct().sorted((l1, l2) -> {
+//            if (l1.get(0).equals(l2.get(0)) && l1.get(1).equals(l2.get(1)) && l1.get(2).equals(l2.get(2))) {
+//                return 0;
+//            } else if (l1.get(0).equals(l2.get(0)) && l1.get(1).equals(l2.get(1)) && l1.get(2) > l2.get(2)) {
+//                return 1;
+//            } else if (l1.get(0).equals(l2.get(0)) && l1.get(1) > l2.get(1)) {
+//                return 1;
+//            } else if (l1.get(0) > l2.get(0)) {
+//                return 1;
+//            } else {
+//                return -1;
+//            }
+//        }).collect(Collectors.toList()));
+
 
         return true;
     }
@@ -263,4 +276,19 @@ public class ImageUtil {
         return true;
     }
 
+
+    public static Color blackOrWhite(Color target) {
+        //可以看做是三维坐标的勾股定理
+        int r1 = target.getRed() - Color.WHITE.getRed();
+        int g1 = target.getGreen() - Color.WHITE.getGreen();
+        int b1 = target.getBlue() - Color.WHITE.getBlue();
+        double diffWhite = Math.sqrt(r1 * r1 + g1 * g1 + b1 * b1);
+
+        int r2 = target.getRed() - Color.BLACK.getRed();
+        int g2 = target.getGreen() - Color.BLACK.getGreen();
+        int b2 = target.getBlue() - Color.BLACK.getBlue();
+        double diffBlack = Math.sqrt(r2 * r2 + g2 * g2 + b2 * b2);
+
+        return diffWhite < diffBlack ? Color.BLACK : Color.WHITE;
+    }
 }
